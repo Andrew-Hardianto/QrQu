@@ -59,16 +59,12 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     containerColor = BrutalWhite
                 ) { innerPadding ->
-                    val context = LocalContext.current
-                    val database = AppDatabase.getDatabase(context)
-                    val dao = database.scanHistoryDao()
-
+                    val appContainer = (LocalContext.current.applicationContext as QrQuApplication).container
                     val viewModel: MainViewModel = viewModel(
-                        factory = object : ViewModelProvider.Factory {
-                            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                                return MainViewModel(dao) as T
-                            }
-                        }
+                        factory = MainViewModel.provideFactory(
+                            appContainer.scanHistoryRepository,
+                            appContainer.qrScannerHelper
+                        )
                     )
 
                     QrScannerScreen(
@@ -102,7 +98,7 @@ fun QrScannerScreen(
         contract = ActivityResultContracts.PickVisualMedia(),
         onResult = { uri ->
             if (uri != null) {
-                viewModel.scanImageUri(context, uri)
+                viewModel.scanImageUri(uri)
             }
         }
     )
@@ -234,15 +230,7 @@ fun QrScannerScreen(
                                     ) {
                                         BrutalButton(
                                             text = "COPY",
-                                            onClick = {
-                                                val clipboard =
-                                                    context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                                                val clip =
-                                                    android.content.ClipData.newPlainText("QR Code", data.qrContent)
-                                                clipboard.setPrimaryClip(clip)
-                                                Toast.makeText(context, "Disalin ke clipboard", Toast.LENGTH_SHORT)
-                                                    .show()
-                                            },
+                                            onClick = { copyToClipboard(context, data.qrContent) },
                                             modifier = Modifier.weight(1f),
                                             textStyle = MaterialTheme.typography.labelSmall,
                                             contentPadding = androidx.compose.foundation.layout.PaddingValues(
@@ -254,17 +242,7 @@ fun QrScannerScreen(
                                         if (android.util.Patterns.WEB_URL.matcher(data.qrContent).matches()) {
                                             BrutalButton(
                                                 text = "BUKA",
-                                                onClick = {
-                                                    var url = data.qrContent
-                                                    if (!url.startsWith("http://") && !url.startsWith("https://")) {
-                                                        url = "http://$url"
-                                                    }
-                                                    val intent = android.content.Intent(
-                                                        android.content.Intent.ACTION_VIEW,
-                                                        android.net.Uri.parse(url)
-                                                    )
-                                                    context.startActivity(intent)
-                                                },
+                                                onClick = { openUrl(context, data.qrContent) },
                                                 modifier = Modifier.weight(1f),
                                                 textStyle = MaterialTheme.typography.labelSmall,
                                                 contentPadding = androidx.compose.foundation.layout.PaddingValues(
@@ -295,4 +273,21 @@ fun QrScannerScreen(
             }
         }
     }
+}
+
+private fun copyToClipboard(context: android.content.Context, text: String) {
+    val clipboard =
+        context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+    val clip = android.content.ClipData.newPlainText("QR Code", text)
+    clipboard.setPrimaryClip(clip)
+    Toast.makeText(context, "Disalin ke clipboard", Toast.LENGTH_SHORT).show()
+}
+
+private fun openUrl(context: android.content.Context, url: String) {
+    var formattedUrl = url
+    if (!formattedUrl.startsWith("http://") && !formattedUrl.startsWith("https://")) {
+        formattedUrl = "http://$formattedUrl"
+    }
+    val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(formattedUrl))
+    context.startActivity(intent)
 }
