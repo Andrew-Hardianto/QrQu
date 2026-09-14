@@ -4,82 +4,80 @@ import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.drew.qrqu.data.NetworkModule
-import com.drew.qrqu.data.UploadRequest
+import com.drew.qrqu.data.ScanHistoryDao
+import com.drew.qrqu.data.ScanHistoryEntity
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-sealed class UploadState {
-    object Idle : UploadState()
-    object Loading : UploadState()
-    data class Success(val message: String) : UploadState()
-    data class Error(val message: String) : UploadState()
+sealed class ScanState {
+    object Idle : ScanState()
+    object Loading : ScanState()
+    data class Error(val message: String) : ScanState()
 }
 
-class MainViewModel : ViewModel() {
+class MainViewModel(private val scanHistoryDao: ScanHistoryDao) : ViewModel() {
 
-    private val _uploadState = MutableStateFlow<UploadState>(UploadState.Idle)
-    val uploadState: StateFlow<UploadState> = _uploadState
+    private val _scanState = MutableStateFlow<ScanState>(ScanState.Idle)
+    val scanState: StateFlow<ScanState> = _scanState.asStateFlow()
 
-    private val _scannedData = MutableStateFlow<String?>(null)
-    val scannedData: StateFlow<String?> = _scannedData
+    // Mengambil riwayat dari Room Database
+    val scanHistory: StateFlow<List<String>> = scanHistoryDao.getAllHistory()
+        .map { entities -> entities.map { it.qrContent } }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
 
-    fun setScannedData(data: String) {
-        _scannedData.value = data
-        uploadData(data)
+    // Fungsi ini dipanggil dari Camera Scanner (Play Services)
+    fun addScannedData(data: String) {
+        viewModelScope.launch {
+            scanHistoryDao.insertHistory(ScanHistoryEntity(qrContent = data))
+        }
     }
 
+    // Fungsi ini memproses URI gambar dari Photo Picker (ML Kit)
     fun scanImageUri(context: Context, uri: Uri) {
-        _uploadState.value = UploadState.Loading
+        _scanState.value = ScanState.Loading
         try {
             val image = InputImage.fromFilePath(context, uri)
             val options = BarcodeScannerOptions.Builder()
                 .setBarcodeFormats(Barcode.FORMAT_QR_CODE)
                 .build()
             val scanner = BarcodeScanning.getClient(options)
-            
+
             scanner.process(image)
                 .addOnSuccessListener { barcodes ->
                     if (barcodes.isNotEmpty()) {
                         val rawValue = barcodes[0].rawValue
                         if (rawValue != null) {
-                            setScannedData(rawValue)
+                            addScannedData(rawValue)
+                            _scanState.value = ScanState.Idle
                         } else {
-                            _uploadState.value = UploadState.Error("QR Code kosong atau tidak terbaca")
+                            _scanState.value = ScanState.Error("QR Code kosong atau tidak terbaca")
                         }
                     } else {
-                        _uploadState.value = UploadState.Error("Tidak ditemukan QR Code pada gambar")
+                        _scanState.value = ScanState.Error("Tidak ditemukan QR Code pada gambar")
                     }
                 }
                 .addOnFailureListener { e ->
-                    _uploadState.value = UploadState.Error("Gagal memproses gambar: ${e.message}")
+                    _scanState.value = ScanState.Error("Gagal memproses gambar: ${e.message}")
                 }
         } catch (e: Exception) {
-             _uploadState.value = UploadState.Error("Gagal memuat gambar: ${e.message}")
-        }
-    }
-
-    private fun uploadData(data: String) {
-        viewModelScope.launch {
-            _uploadState.value = UploadState.Loading
-            try {
-                // Proses upload menggunakan Retrofit
-                val request = UploadRequest(qrContent = data)
-                val response = NetworkModule.apiService.uploadQrData(request)
-                _uploadState.value = UploadState.Success("Upload Berhasil! ID: ${response.id}")
-            } catch (e: Exception) {
-                _uploadState.value = UploadState.Error("Upload Gagal: ${e.localizedMessage}")
-            }
+            _scanState.value = ScanState.Error("Gagal memuat gambar: ${e.message}")
         }
     }
 
     fun resetState() {
-        _uploadState.value = UploadState.Idle
-        _scannedData.value = null
+        _scanState.value = ScanState.Idle
     }
 }
