@@ -126,7 +126,7 @@ fun QrScannerScreen(
         // Action Buttons
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Box(modifier = Modifier.weight(1f)) {
                 BrutalButton(
@@ -243,7 +243,12 @@ fun QrScannerScreen(
                                                 Toast.makeText(context, "Disalin ke clipboard", Toast.LENGTH_SHORT)
                                                     .show()
                                             },
-                                            modifier = Modifier.weight(1f)
+                                            modifier = Modifier.weight(1f),
+                                            textStyle = MaterialTheme.typography.labelSmall,
+                                            contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                                                horizontal = 8.dp,
+                                                vertical = 8.dp
+                                            )
                                         )
 
                                         if (android.util.Patterns.WEB_URL.matcher(data.qrContent).matches()) {
@@ -260,7 +265,12 @@ fun QrScannerScreen(
                                                     )
                                                     context.startActivity(intent)
                                                 },
-                                                modifier = Modifier.weight(1f)
+                                                modifier = Modifier.weight(1f),
+                                                textStyle = MaterialTheme.typography.labelSmall,
+                                                contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                                                    horizontal = 8.dp,
+                                                    vertical = 8.dp
+                                                )
                                             )
                                         }
 
@@ -269,7 +279,12 @@ fun QrScannerScreen(
                                             onClick = {
                                                 viewModel.deleteHistory(data)
                                             },
-                                            modifier = Modifier.weight(1f)
+                                            modifier = Modifier.weight(1f),
+                                            textStyle = MaterialTheme.typography.labelSmall,
+                                            contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                                                horizontal = 8.dp,
+                                                vertical = 8.dp
+                                            )
                                         )
                                     }
                                 }

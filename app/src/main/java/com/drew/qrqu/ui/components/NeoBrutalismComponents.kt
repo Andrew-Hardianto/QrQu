@@ -20,13 +20,17 @@ import com.drew.qrqu.ui.theme.BrutalBlack
 import com.drew.qrqu.ui.theme.BrutalPureWhite
 import com.drew.qrqu.ui.theme.BrutalRed
 
+import androidx.compose.ui.text.TextStyle
+
 @Composable
 fun BrutalButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     backgroundColor: Color = BrutalRed,
-    textColor: Color = BrutalPureWhite
+    textColor: Color = BrutalPureWhite,
+    textStyle: TextStyle = TextStyle.Default,
+    contentPadding: PaddingValues = PaddingValues(horizontal = 24.dp, vertical = 14.dp)
 ) {
     val shape = RoundedCornerShape(0.dp) // Kaku, tanpa lengkung
     Box(
@@ -48,12 +52,13 @@ fun BrutalButton(
                 .background(backgroundColor)
                 .border(3.dp, BrutalBlack, shape)
                 .clickable(onClick = onClick)
-                .padding(horizontal = 24.dp, vertical = 14.dp)
+                .padding(contentPadding)
         ) {
             Text(
                 text = text.uppercase(),
                 color = textColor,
-                fontWeight = FontWeight.Black
+                fontWeight = FontWeight.Black,
+                style = textStyle
             )
         }
     }
