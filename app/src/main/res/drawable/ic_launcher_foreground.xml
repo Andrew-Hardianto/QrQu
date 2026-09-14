@@ -1,0 +1,36 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+  <path
+      android:pathData="M23,23m-8,0a8,8 0,1 1,16 0a8,8 0,1 1,-16 0"
+      android:fillColor="#FF3333"/>
+  <path
+      android:pathData="M54,54m-42,0a42,42 0,1 1,84 0a42,42 0,1 1,-84 0"
+      android:fillColor="#FF3333"/>
+  <path
+      android:pathData="M54,54m-34,0a34,34 0,1 1,68 0a34,34 0,1 1,-68 0"
+      android:fillColor="#FFFFFF"/>
+  <!-- QR Code Elements (Simplified for Vector) -->
+  <path
+      android:pathData="M38,38h8v8h-8z M40,40h4v4h-4z"
+      android:fillColor="#000000"/>
+  <path
+      android:pathData="M62,38h8v8h-8z M64,40h4v4h-4z"
+      android:fillColor="#000000"/>
+  <path
+      android:pathData="M38,62h8v8h-8z M40,64h4v4h-4z"
+      android:fillColor="#000000"/>
+  <!-- QR Code Noise (Simulated) -->
+  <path
+      android:pathData="M52,38h4v4h-4z M48,46h4v4h-4z M56,46h4v4h-4z M38,50h4v4h-4z M66,50h4v4h-4z M44,54h4v4h-4z M60,54h4v4h-4z M38,58h4v4h-4z M66,58h4v4h-4z M52,62h4v4h-4z M48,66h4v4h-4z M56,66h4v4h-4z M62,62h8v4h-8z"
+      android:fillColor="#000000"/>
+  <!-- Center 'u' logo -->
+  <path
+      android:pathData="M48,50h12v12a4,4 0,0 1,-8 0v-12z"
+      android:fillColor="#000000"/>
+  <path
+      android:pathData="M52,52v10a2,2 0,0 0,4 0v-10z"
+      android:fillColor="#FFFFFF"/>
+</vector>
