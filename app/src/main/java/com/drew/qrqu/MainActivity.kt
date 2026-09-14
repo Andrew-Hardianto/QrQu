@@ -221,11 +221,58 @@ fun QrScannerScreen(
                             BrutalCard(
                                 modifier = Modifier.fillMaxWidth()
                             ) {
-                                Text(
-                                    text = data,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    color = BrutalBlack
-                                )
+                                Column(modifier = Modifier.fillMaxWidth()) {
+                                    Text(
+                                        text = data.qrContent,
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        color = BrutalBlack
+                                    )
+                                    Spacer(modifier = Modifier.height(12.dp))
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        BrutalButton(
+                                            text = "COPY",
+                                            onClick = {
+                                                val clipboard =
+                                                    context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                                                val clip =
+                                                    android.content.ClipData.newPlainText("QR Code", data.qrContent)
+                                                clipboard.setPrimaryClip(clip)
+                                                Toast.makeText(context, "Disalin ke clipboard", Toast.LENGTH_SHORT)
+                                                    .show()
+                                            },
+                                            modifier = Modifier.weight(1f)
+                                        )
+
+                                        if (android.util.Patterns.WEB_URL.matcher(data.qrContent).matches()) {
+                                            BrutalButton(
+                                                text = "BUKA",
+                                                onClick = {
+                                                    var url = data.qrContent
+                                                    if (!url.startsWith("http://") && !url.startsWith("https://")) {
+                                                        url = "http://$url"
+                                                    }
+                                                    val intent = android.content.Intent(
+                                                        android.content.Intent.ACTION_VIEW,
+                                                        android.net.Uri.parse(url)
+                                                    )
+                                                    context.startActivity(intent)
+                                                },
+                                                modifier = Modifier.weight(1f)
+                                            )
+                                        }
+
+                                        BrutalButton(
+                                            text = "HAPUS",
+                                            onClick = {
+                                                viewModel.deleteHistory(data)
+                                            },
+                                            modifier = Modifier.weight(1f)
+                                        )
+                                    }
+                                }
                             }
                         }
                     }

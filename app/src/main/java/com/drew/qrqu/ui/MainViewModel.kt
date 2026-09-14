@@ -30,8 +30,7 @@ class MainViewModel(private val scanHistoryDao: ScanHistoryDao) : ViewModel() {
     val scanState: StateFlow<ScanState> = _scanState.asStateFlow()
 
     // Mengambil riwayat dari Room Database
-    val scanHistory: StateFlow<List<String>> = scanHistoryDao.getAllHistory()
-        .map { entities -> entities.map { it.qrContent } }
+    val scanHistory: StateFlow<List<ScanHistoryEntity>> = scanHistoryDao.getAllHistory()
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
@@ -42,6 +41,12 @@ class MainViewModel(private val scanHistoryDao: ScanHistoryDao) : ViewModel() {
     fun addScannedData(data: String) {
         viewModelScope.launch {
             scanHistoryDao.insertHistory(ScanHistoryEntity(qrContent = data))
+        }
+    }
+
+    fun deleteHistory(entity: ScanHistoryEntity) {
+        viewModelScope.launch {
+            scanHistoryDao.deleteHistory(entity)
         }
     }
 

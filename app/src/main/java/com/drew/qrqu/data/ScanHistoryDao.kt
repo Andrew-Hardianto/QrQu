@@ -13,5 +13,8 @@ interface ScanHistoryDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertHistory(history: ScanHistoryEntity)
+
+    @androidx.room.Delete
+    suspend fun deleteHistory(history: ScanHistoryEntity)
 }
 
